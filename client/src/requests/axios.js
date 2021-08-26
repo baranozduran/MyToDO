@@ -48,5 +48,17 @@ export default {
           console.log(err);
         }
       });
+  },
+  addTask: function(dataBlock) {
+    return Api()
+      .post("addTask", dataBlock)
+      .then(response => response.data)
+      .catch(err => {
+        if (err.response.status === 401) {
+          return err.response.data;
+        } else {
+          console.log(err);
+        }
+      });
   }
 };

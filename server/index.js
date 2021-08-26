@@ -143,6 +143,26 @@ app.post("/deleteAccount", authCheck, (req, res) => {
     });
 });
 
+app.post("/addTask", authCheck, (req, res) => {
+  User.findOneAndUpdate(
+    { email: req.userData.email },
+    { $push: { tasks: { task: req.body.task, date: req.body.date } } },
+    { new: true }
+  )
+    .then((response) => {
+      res.status(200).json({
+        addedTask: response.tasks[response.tasks.length - 1],
+        newTasks: response.tasks,
+        isTaskAdded: true,
+      });
+    })
+    .catch((err) => {
+      res.status(500).json({
+        isTaskAdded: false,
+      });
+    });
+});
+
 //connecting to database and listening to the port
 const dbUrl =
   "mongodb+srv://ozduranbaran:636636Bc@cluster0.opbgo.mongodb.net/filmApp?retryWrites=true&w=majority";

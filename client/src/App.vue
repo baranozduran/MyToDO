@@ -1,6 +1,5 @@
 <template>
-  <div class="main-container">
-    <div id="nav"></div>
+  <div class="mainContainer">
     <router-view />
   </div>
 </template>

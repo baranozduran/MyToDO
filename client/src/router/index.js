@@ -1,9 +1,5 @@
 import { createRouter, createWebHistory } from "vue-router";
 import Home from "../views/Home.vue";
-import Films from "../views/Films.vue";
-import Reviews from "../views/Reviews.vue";
-import Members from "../views/Members.vue";
-import Favourite from "../views/Favourite.vue";
 import SignUp from "../views/SignUp.vue";
 import Login from "../views/Login.vue";
 import LoggedInHome from "../views/LoggedInHome.vue";
@@ -28,26 +24,6 @@ const routes = [
     path: "/hello",
     name: "LoggedInHome",
     component: LoggedInHome
-  },
-  {
-    path: "/films",
-    name: "Films",
-    component: Films
-  },
-  {
-    path: "/reviews",
-    name: "Reviews",
-    component: Reviews
-  },
-  {
-    path: "/members",
-    name: "Members",
-    component: Members
-  },
-  {
-    path: "/favouritefilmoftheyear",
-    name: "Favourite",
-    component: Favourite
   }
 ];
 
