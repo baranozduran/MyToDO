@@ -3,7 +3,7 @@
     <HomeNav @go-login="goLogin()" @go-signup="goSignUp()" :root="nameOfMe" />
     <div class="calendarAndAdd">
       <AddTask @add-task="addTask($event)" class="addTask" />
-      <Calendar class="calendar" />
+      <Calendar :tasks="tasks" class="calendar" />
     </div>
   </div>
 </template>
@@ -17,7 +17,8 @@ export default {
   components: { HomeNav, Calendar, AddTask },
   data() {
     return {
-      nameOfMe: "Home"
+      nameOfMe: "Home",
+      tasks: []
     };
   },
   methods: {
@@ -33,15 +34,31 @@ export default {
     },
     addTask($event) {
       const taskCount = parseInt(localStorage.taskCount);
-      localStorage.setItem(`task${taskCount + 1}`, {
-        task: $event.task,
-        date: $event.date
-      });
+      localStorage.setItem(
+        `task${taskCount + 1}`,
+        JSON.stringify({
+          task: $event.task,
+          date: {
+            day: $event.date.slice(8, 10),
+            month: $event.date.slice(5, 7),
+            year: $event.date.slice(0, 4)
+          }
+        })
+      );
       localStorage.taskCount = parseInt(localStorage.taskCount) + 1;
     }
   },
   created() {
     if (!localStorage.taskCount) localStorage.setItem("taskCount", 0);
+    const taskCount = parseInt(localStorage.getItem("taskCount"));
+    if (taskCount) {
+      for (let i = 0; i < taskCount; i++) {
+        this.tasks[i] = JSON.parse(localStorage.getItem(`task${i + 1}`));
+      }
+    } else {
+      console.log(taskCount);
+      this.tasks = [];
+    }
   }
 };
 </script>

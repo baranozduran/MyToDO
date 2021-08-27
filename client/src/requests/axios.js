@@ -60,5 +60,41 @@ export default {
           console.log(err);
         }
       });
+  },
+  removeTask: function(dataBlock) {
+    return Api()
+      .post("removeTask", dataBlock)
+      .then(response => response.data)
+      .catch(err => {
+        if (err.response.status === 401) {
+          return err.response.data;
+        } else {
+          console.log(err);
+        }
+      });
+  },
+  getTask: function(dataBlock) {
+    return Api()
+      .post("getTask", dataBlock)
+      .then(response => response.data)
+      .catch(err => {
+        if (err.response.status === 401) {
+          return err.response.data;
+        } else {
+          console.log(err);
+        }
+      });
+  },
+  getUsers: function(dataBlock) {
+    return Api()
+      .post("getUsers", dataBlock)
+      .then(response => response.data)
+      .catch(err => {
+        if (err.response.status === 401) {
+          return err.response.data;
+        } else {
+          console.log(err);
+        }
+      });
   }
 };

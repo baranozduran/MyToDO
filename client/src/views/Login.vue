@@ -42,7 +42,7 @@ export default {
       const response = await axios.login(req);
       if (response.message === "Auth successful") {
         this.showError = false;
-        this.createToken(response.token);
+        this.$cookies.set("token", response.token, "1d");
         this.$router.push({
           name: "LoggedInHome",
           path: "/hello"

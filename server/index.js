@@ -8,6 +8,7 @@ const bcrypt = require("bcrypt");
 const jwt = require("jsonwebtoken");
 const User = require("./models/user");
 const authCheck = require("./middleware/authCheck");
+const { replaceOne } = require("./models/user");
 
 const app = express();
 app
@@ -146,19 +147,89 @@ app.post("/deleteAccount", authCheck, (req, res) => {
 app.post("/addTask", authCheck, (req, res) => {
   User.findOneAndUpdate(
     { email: req.userData.email },
-    { $push: { tasks: { task: req.body.task, date: req.body.date } } },
+    {
+      $push: {
+        tasks: {
+          task: req.body.task,
+          date: req.body.date,
+          group: req.body.group,
+        },
+      },
+    },
     { new: true }
   )
     .then((response) => {
       res.status(200).json({
         addedTask: response.tasks[response.tasks.length - 1],
         newTasks: response.tasks,
-        isTaskAdded: true,
+        verified: true,
       });
     })
     .catch((err) => {
       res.status(500).json({
-        isTaskAdded: false,
+        verified: false,
+      });
+    });
+});
+
+app.post("/removeTask", authCheck, (req, res) => {
+  console.log(req.body.task, req.body.date);
+  User.findOneAndUpdate(
+    { email: req.userData.email },
+    {
+      $pull: {
+        tasks: {
+          task: req.body.task,
+          date: req.body.date,
+        },
+      },
+    },
+    { new: true }
+  )
+    .then((response) => {
+      res.status(200).json({
+        newTasks: response.tasks,
+        verified: true,
+      });
+    })
+    .catch((err) => {
+      res.status(500).json({
+        verified: false,
+      });
+    });
+});
+
+app.post("/getTask", authCheck, (req, res) => {
+  let user;
+  console.log(req.userData.email);
+  User.findOne({ email: req.userData.email }, ["tasks", "_id"])
+    .exec()
+    .then((response) => {
+      user = {
+        tasks: response.tasks,
+        id: response._id,
+      };
+    })
+    .catch((err) => {
+      console.log(err);
+      res.status(500).json({
+        verified: false,
+      });
+    });
+});
+app.post("/getUsers", authCheck, (req, res) => {
+  User.find({}, ["_id", "email"])
+    .exec()
+    .then((response) => {
+      res.status(200).json({
+        users: response,
+        verified: true,
+      });
+    })
+    .catch((err) => {
+      console.log(err);
+      res.status(500).json({
+        verified: false,
       });
     });
 });

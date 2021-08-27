@@ -3,11 +3,11 @@
     <Header :date="date" />
     <div class="daysContainer">
       <Day
+        @remove-task="$emit('remove-task', $event)"
         class="day"
         v-bind:key="fullDay.day"
         v-for="fullDay in nextSevenDays"
-        :day="fullDay.day"
-        :weekDay="fullDay.weekDay"
+        :theDay="fullDay"
       />
     </div>
     <font-awesome-icon
@@ -78,14 +78,33 @@ export default {
     Header,
     FontAwesomeIcon
   },
+  props: {
+    tasks: Array
+  },
   methods: {
     createNextSevenDays(day, weekDay, month, year) {
       for (let i = 0; i < 7; i++, day++, weekDay = (weekDay + 1) % 6) {
         if (this.isMonthFinished(day, this.months[month], year)) {
-          this.nextSevenDays[i] = { day: day, weekDay: this.days[weekDay] };
+          this.nextSevenDays[i] = {
+            day: day,
+            month: month,
+            year: year,
+            weekDay: this.days[weekDay],
+            tasks: this.returnTheTask(day, month, year)
+          };
           day = 0;
+          if (month === 11) {
+            year += 1;
+          }
+          month = (month + 1) % 12;
         } else {
-          this.nextSevenDays[i] = { day: day, weekDay: this.days[weekDay] };
+          this.nextSevenDays[i] = {
+            day: day,
+            month: month,
+            year: year,
+            weekDay: this.days[weekDay],
+            tasks: this.returnTheTask(day, month, year)
+          };
         }
       }
     },
@@ -99,25 +118,23 @@ export default {
     },
     showNextWeek(nextSevenDays) {
       if (nextSevenDays[6].day < nextSevenDays[0].day) {
-        console.log(this.monthNumber);
-        console.log(this.date.month);
         this.monthNumber = (this.monthNumber + 1) % 12;
         this.date.month = this.months[this.monthNumber];
-        console.log(this.date.month);
         if (this.monthNumber === 11) {
           this.date.year += 1;
           this.createNextSevenDays(
             nextSevenDays[6].day,
             this.date.weekDay,
             this.monthNumber + 1,
-            this.year + 1
+            this.date.year + 1
           );
         } else {
+          console.log(nextSevenDays[6].day);
           this.createNextSevenDays(
             nextSevenDays[6].day,
             this.date.weekDay,
             this.monthNumber + 1,
-            this.year
+            this.date.year
           );
         }
       } else {
@@ -125,12 +142,47 @@ export default {
           nextSevenDays[6].day,
           this.date.weekDay,
           this.monthNumber,
-          this.year
+          this.date.year
         );
+      }
+    },
+    returnTheTask(day, month, year) {
+      let locDay;
+      let locMonth;
+      const locYear = year.toString();
+      if (day < 10) {
+        locDay = "0" + day.toString();
+      } else {
+        locDay = day.toString();
+      }
+      if (month < 10) {
+        locMonth = "0" + month.toString();
+      } else {
+        locMonth = month.toString();
+      }
+      const date = {
+        day: locDay,
+        month: locMonth,
+        year: locYear
+      };
+      const tasksOfTheDay = this.tasks.filter(
+        el =>
+          el.date.day === date.day &&
+          el.date.month === date.month &&
+          el.date.year === date.year
+      );
+      if (tasksOfTheDay.length < 1) {
+        return tasksOfTheDay;
+      } else {
+        const taskNames = [];
+        for (let i = 0; i < tasksOfTheDay.length; i++) {
+          taskNames[i] = tasksOfTheDay[i].task;
+        }
+        return taskNames;
       }
     }
   },
-  created() {
+  async created() {
     this.today = new Date();
     this.date.day = this.today.getDate();
     this.date.weekDay = this.today.getDay();
@@ -146,6 +198,16 @@ export default {
       this.monthNumber,
       this.date.year
     );
+  },
+  watch: {
+    tasks: function() {
+      this.createNextSevenDays(
+        this.date.day,
+        this.date.weekDay,
+        this.monthNumber,
+        this.date.year
+      );
+    }
   }
 };
 </script>

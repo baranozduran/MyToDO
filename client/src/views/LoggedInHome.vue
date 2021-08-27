@@ -7,7 +7,11 @@
     />
     <div class="calendarAndAdd">
       <AddTask @add-task="addTask($event)" class="addTask" />
-      <Calendar class="calendar" />
+      <Calendar
+        @remove-task="removeTask($event)"
+        :tasks="tasks"
+        class="calendar"
+      />
     </div>
   </div>
 </template>
@@ -23,18 +27,21 @@ export default {
   components: { LoggedInNav, Calendar, AddTask },
   data() {
     return {
-      nameOfMe: "LoggedInHome"
+      nameOfMe: "LoggedInHome",
+      tasks: {
+        type: String
+      }
     };
   },
   methods: {
     ...mapMutations(["createToken"]),
     async signOut() {
       const req = {
-        token: this.token
+        token: this.$cookies.get("token")
       };
       const response = await axios.signOut(req);
       if (response.verified) {
-        this.createToken("");
+        this.$cookies.remove("token");
         this.$router.push({ name: "Home" });
       } else {
         console.log("Couldn't signed out");
@@ -43,36 +50,80 @@ export default {
     },
     async deleteAccount() {
       const req = {
-        token: this.token
+        token: this.$cookies.get("token")
       };
       const response = await axios.deleteAccount(req);
       if (response.verified) {
-        this.createToken("");
+        this.$cookies.remove("token");
         this.$router.push({ name: "Home" });
       } else {
         console.log("Account deletion couldn't been completed.");
       }
     },
     async addTask($event) {
-      console.log($event.date);
       const req = {
         task: $event.task,
-        date: $event.date,
-        token: this.token
+        date: {
+          day: $event.date.slice(8, 10),
+          month: "0" + (parseInt($event.date.slice(5, 7)) - 1),
+          year: $event.date.slice(0, 4)
+        },
+        token: this.$cookies.get("token"),
+        group: $event.group
       };
       const response = await axios.addTask(req);
-      if (response.isTaskAdded) {
-        console.log("Task been added successfully");
+      if (response.verified) {
+        const req = {
+          token: this.$cookies.get("token")
+        };
+        const response = await axios.getTask(req);
+        if (response.verified) {
+          this.tasks = response.tasks;
+          this.tasksCame = true;
+        }
       } else {
         console.log("Task couldn't been added");
+      }
+    },
+    async removeTask($event) {
+      const req = {
+        task: $event.task,
+        date: {
+          day: $event.theDay.day.toString(),
+          month: "0" + $event.theDay.month.toString(),
+          year: $event.theDay.year.toString()
+        },
+        token: this.$cookies.get("token")
+      };
+      const response = await axios.removeTask(req);
+      if (response.verified) {
+        const req = {
+          token: this.$cookies.get("token")
+        };
+        const response = await axios.getTask(req);
+        if (response.verified) {
+          this.tasks = response.tasks;
+          this.tasksCame = true;
+        }
+      } else {
+        console.log("Task couldn't been removed");
       }
     }
   },
   computed: {
     ...mapState(["token"])
   },
-  created() {
-    if (!localStorage.taskCount) localStorage.setItem("taskCount", 0);
+  async created() {
+    const req = {
+      token: this.$cookies.get("token")
+    };
+    const response = await axios.getTask(req);
+    if (response.verified) {
+      this.tasks = response.tasks;
+      this.tasksCame = true;
+    } else {
+      alert("Couldn't get tasks");
+    }
   }
 };
 </script>
